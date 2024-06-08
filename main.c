@@ -27,17 +27,38 @@ typedef struct dados {
     float valores[2]; // convenção: 0 = economica ; 1 = executiva ;
     Reserva *reservas;
     int num_reservas;
-    Reserva *reservasnovas;
-    int num_reservasnovas;
 } Dados;
 
 
 //funções:
 
-void fechar_dia(){
-    for()
+void ler_arquivo(Dados *dados) {
+
 }
 
+void abrir_voo(Dados *dados) {
+    dados->aberto = 1;
+    scanf(" %d", &dados->assentos);
+    scanf(" %f", &dados->valores[0]);
+    scanf(" %f", &dados->valores[1]);
+}
+
+void fechar_voo(Dados *dados) {
+    dados->aberto = 0;
+    float total = 0;
+    int i, tipo;
+    for (i = 0; i < dados->num_reservas; i++) {
+        tipo = dados->reservas[i].classe;
+        total += dados->valores[tipo];
+
+        printf("%s\n", dados->reservas[i].cpf);
+        printf("%s ", dados->reservas[i].nome);
+        printf("%s\n", dados->reservas[i].sobrenome);
+        printf("%s\n\n", dados->reservas[i].numero_assento);
+    }
+    printf("Valor Total: %.2f\n", total);
+    printf("--------------------------------------------------\n");
+}
 
 //main:
 int main(void) {
