@@ -34,8 +34,49 @@ typedef struct dados {
 
 //funções:
 
-void fechar_dia(){
-    for()
+void cancelar_reserva(Dados *dados){
+    char cancelado[15];
+    scanf("%s", &cancelado);
+    for(int i = 0; i < dados->num_reservas; i++){
+        if(strcmp(dados->reservas[i], cancelado) == 0){
+            free(dados->reservas[i]);
+            for(int j = i; j < dados->num_reservas - 1; j++){
+                dados->reservas[j] = dados->reservas[j + 1];
+            }
+            dados->num_reservas = dados->num_reservas - 1;
+            dados->reservas = (Reserva *) realloc(dados->num_reservas * (Reserva));
+            break;
+        }
+    }
+    for(int i = 0; i < 10; i++){
+        printf("-----");
+    }
+    printf("\n");
+
+}
+
+
+
+
+
+void fechar_dia(Dados dados){
+    int posicao = 0;
+    printf("Fechamento do dia: \n");
+    printf("Quantidade de reservas: %d\n", dados.num_reservasnovas);
+    for(int i = 0; i < dados.num_reservas; i++){
+        if(dados.reservas[i].classe == 0){
+            posicao += dados.valores[0];
+        }
+        else{
+            posição += dados.valores[1];
+        }
+    }
+    printf("Posição: %d\n", posicao);
+    for(int i = 0; i < 10; i++){
+        printf("-----");
+    }
+    printf("\n");
+    exit(0);
 }
 
 
