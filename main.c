@@ -26,17 +26,23 @@ typedef struct dados {
     int assentos;
     float valores[2]; // convenção: 0 = economica ; 1 = executiva ;
     Reserva *reservas;
+    int num_reservas;
+    Reserva *reservasnovas;
+    int num_reservasnovas;
 } Dados;
 
 
 //funções:
 
-
+void fechar_dia(){
+    for()
+}
 
 
 //main:
 int main(void) {
     Dados dados;
+    
     ler_arquivo(&dados);
 
 
