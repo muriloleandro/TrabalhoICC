@@ -4,9 +4,9 @@
 
 //structs:
 typedef struct datas {
-    unsigned short int dia;
-    unsigned short int mes;
-    unsigned short int ano;
+    int dia;
+    int mes;
+    int ano;
 } Data;
 
 typedef struct reserva {
@@ -43,6 +43,19 @@ cpf tam_assento numero_assento classe
 void ler_arquivo(Dados *dados) {
     FILE *fp;
     fp = fopen("DATA.DAT", "r");
+
+    if (fp == NULL) {
+        dados->aberto = 0;
+        dados->assentos = 0;
+        dados->valores[0] = 0.0;
+        dados->valores[1] = 0.0;
+        dados->num_reservas = 0;
+        dados->data_da_viagem.dia = 1;
+        dados->data_da_viagem.mes = 1;
+        dados->data_da_viagem.ano = 1970;
+        return;
+    }
+
     fscanf(fp, "%d", &dados->aberto);
     fscanf(fp, " %d", &dados->assentos);
     fscanf(fp, " %f", &dados->valores[0]);
@@ -51,6 +64,7 @@ void ler_arquivo(Dados *dados) {
     fscanf(fp, " %d", &dados->data_da_viagem.dia);
     fscanf(fp, " %d", &dados->data_da_viagem.mes);
     fscanf(fp, " %d", &dados->data_da_viagem.ano);
+
     int tam_part, tam_dest;
     fscanf(fp, " %d", &tam_part);
     dados->origem = (char *) malloc(tam_part * sizeof(char));
@@ -63,8 +77,8 @@ void ler_arquivo(Dados *dados) {
     int tam_reservas = dados->num_reservas * sizeof(Reserva);
     dados->reservas = (Reserva *) malloc(tam_reservas);
     int i;
+    int tam_nome, tam_sobrenome, tam_assento;
     for (i = 0; i < dados->num_reservas; i++) {
-        int tam_nome, tam_sobrenome, tam_assento;
         fscanf(fp, " %d", &tam_nome);
         dados->reservas[i].nome = (char *) malloc(tam_nome * sizeof(char));
         fscanf(fp, " %s", dados->reservas[i].nome);
@@ -80,7 +94,7 @@ void ler_arquivo(Dados *dados) {
         dados->reservas[i].numero_assento = (char *) malloc(tam_assento * sizeof(char));
         fscanf(fp, " %s", dados->reservas[i].numero_assento);
 
-        fscanf(fp, " %d", dados->reservas[i].classe);
+        fscanf(fp, " %d", &dados->reservas[i].classe);
     }
 
     fclose(fp);
@@ -101,7 +115,7 @@ void salvar_arquivo(Dados dados) {
     tam_part = strlen(dados.origem);
     tam_dest = strlen(dados.destino);
     fprintf(fp, " %d", tam_part);
-    fprintf(fp, " %d", dados.origem);
+    fprintf(fp, " %s", dados.origem);
     fprintf(fp, " %d", tam_dest);
     fprintf(fp, " %s", dados.destino);
 
@@ -161,7 +175,7 @@ void modificar_reserva(Dados *dados) {
             printf("Reserva Modificada:\n");
             printf("%s\n", cpf_consulta_mod);
             printf("%s %s\n", dados->reservas[i].nome, dados->reservas[i].sobrenome);
-            printf("%s/%s/%s\n", dados->data_da_viagem.dia, dados->data_da_viagem.mes, dados->data_da_viagem.ano);
+            printf("%d/%d/%d\n", dados->data_da_viagem.dia, dados->data_da_viagem.mes, dados->data_da_viagem.ano);
             printf("Voo: %s\n", dados->numero_do_voo);
             printf("Assento: %s\n", dados->reservas[i].numero_assento);
             if (dados->reservas[i].classe == 0) {
@@ -172,10 +186,9 @@ void modificar_reserva(Dados *dados) {
             }
             printf("Trecho: %s %s\n", dados->origem, dados->destino);
             if (dados->reservas[i].classe == 0) {
-                printf("Valores: %s\n", dados->valores[0]);
-            }
-            else {
-                printf("Valores: %s\n", dados->valores[1]);
+                printf("Valores: %.2f\n", dados->valores[0]);
+            } else {
+                printf("Valores: %.2f\n", dados->valores[1]);
             }
             printf("--------------------------------------------------\n");
             break;
@@ -237,61 +250,66 @@ void fechar_dia(Dados dados) {
 
 void ler_reserva(Dados *dados){
     float valor;
-    char exec[10] = "executivo";
+    char exec[10] = "executiva";
     char classe_do_voo[10];
 
     if(dados->assentos == 0){
         return;
     }
 
-    dados->reservas = (Reserva*)malloc(dados->num_reservas*sizeof(Reserva));
+    dados->num_reservas++;
 
-    dados->reservas->nome = (char*)malloc(100*sizeof(char));
-    scanf("%[^\n]s", dados->reservas->nome);
-    dados->reservas->nome = realloc(dados->reservas->nome, strlen(dados->reservas->nome));
-
-    dados->reservas->sobrenome = (char*)malloc(100*sizeof(char));
-    scanf("%[^\n]s", dados->reservas->sobrenome);
-    dados->reservas->sobrenome = realloc(dados->reservas->sobrenome, strlen(dados->reservas->sobrenome));
-
-    scanf("%[^\n]s", dados->reservas->cpf);
-
-    scanf("%hu %hu %hu", &(dados->data_da_viagem.dia), &(dados->data_da_viagem.mes), &(dados->data_da_viagem.ano));
-
-    for (int i=0; i<4; i++){
-        scanf("%c", (dados -> numero_do_voo+i));
+    if (dados->num_reservas == 1) {
+        dados->reservas = (Reserva *) malloc(sizeof(Reserva));
+    } else {
+        dados->reservas = (Reserva *) realloc(dados->reservas, dados->num_reservas * sizeof(Reserva));
     }
 
-    dados->reservas->numero_assento = (char*)malloc(10*sizeof(char));
-    scanf("%[^\n]s", dados->reservas->numero_assento);
-    dados->reservas->numero_assento = realloc(dados->reservas->numero_assento, strlen(dados->reservas->numero_assento));
+    int n = dados->num_reservas-1;
 
-    for (int i=0; i<9; i++){
-        scanf("%c", &(classe_do_voo[i]));
-    }
-    if(strcmp(exec, classe_do_voo)==0){
-        dados->reservas-> classe = 1;
-    }else{
-        dados->reservas->classe = 0;
+    dados->reservas[n].nome = (char *) malloc(100*sizeof(char));
+    scanf(" %s", dados->reservas[n].nome);
+    dados->reservas[n].nome = realloc(dados->reservas[n].nome, strlen(dados->reservas[n].nome));
+
+    dados->reservas[n].sobrenome = (char *) malloc(100*sizeof(char));
+    scanf(" %s", dados->reservas[n].sobrenome);
+    dados->reservas[n].sobrenome = realloc(dados->reservas[n].sobrenome, strlen(dados->reservas[n].sobrenome));
+
+    dados->reservas[n].cpf = (char *) malloc(15 * sizeof(char));
+    scanf(" %s", dados->reservas[n].cpf);
+
+    scanf("%d", &dados->data_da_viagem.dia);
+    scanf("%d", &dados->data_da_viagem.mes);
+    scanf("%d", &dados->data_da_viagem.ano);
+
+    scanf(" %s", dados->numero_do_voo);
+
+    dados->reservas[n].numero_assento = (char*)malloc(10*sizeof(char));
+    scanf(" %s", dados->reservas[n].numero_assento);
+    dados->reservas[n].numero_assento = realloc(dados->reservas[n].numero_assento, strlen(dados->reservas[n].numero_assento));
+
+    scanf(" %s", classe_do_voo);
+    if (strcmp(exec, classe_do_voo)==0) {
+        dados->reservas[n].classe = 1;
+    } else {
+        dados->reservas[n].classe = 0;
     }
 
     scanf("%f", &valor);
 
     dados->origem = (char*)malloc(100*sizeof(char));
-    scanf("%[^\n]s", dados->origem);
+    scanf(" %s", dados->origem);
     dados->origem = realloc(dados->origem, strlen(dados->origem));
 
     dados->destino = (char*)malloc(100*sizeof(char));
-    scanf("%[^\n]s", dados->destino);
+    scanf(" %s", dados->destino);
     dados->destino = realloc(dados->destino, strlen(dados->destino));
-
-    dados->num_reservas++;
 }
 
 void consultar_reserva(Dados *dados){
     int num;
     char cpf_consultado [15];
-    scanf("%[^\n]s", cpf_consultado);
+    scanf(" %s", cpf_consultado);
     for (int i=0; i<dados->num_reservas; i++){
         if(strcmp(cpf_consultado, dados->reservas[i].cpf)==0){
             num=i;
@@ -303,13 +321,13 @@ void consultar_reserva(Dados *dados){
     printf("%hu/%hu/%hu\n", dados->data_da_viagem.dia, dados->data_da_viagem.mes, dados->data_da_viagem.ano);
     printf("Voo: %s\n", dados->numero_do_voo);
     printf("Assento: %s\n", dados->reservas[num].numero_assento);
-    if(dados->reservas[num].classe == 0){
+    if (dados->reservas[num].classe == 0) {
         printf("Classe: economica\n");
-    }else{
-        printf("Classe: economica\n");
+    } else {
+        printf("Classe: executiva\n");
     }
     printf("Trecho: %s %s\n", dados->origem, dados->destino);
-    printf("Valor: %.2f\n", dados->valores[(dados->reservas[num].classe)]);
+    printf("Valor: %.2f\n", dados->valores[dados->reservas[num].classe]);
     printf("--------------------------------------------------\n");
 }
 
@@ -324,6 +342,7 @@ void fechar_voo(Dados *dados) {
     dados->aberto = 0;
     float total = 0;
     int i, tipo;
+    printf("Voo Fechado!\n\n");
     for (i = 0; i < dados->num_reservas; i++) {
         tipo = dados->reservas[i].classe;
         total += dados->valores[tipo];
@@ -335,6 +354,7 @@ void fechar_voo(Dados *dados) {
     }
     printf("Valor Total: %.2f\n", total);
     printf("--------------------------------------------------\n");
+    sair(*dados);
 }
 
 void comando(Dados *dados){
@@ -348,6 +368,7 @@ void comando(Dados *dados){
     }
     if(*comando == 'R'){
         ler_reserva(dados);
+        //printf("%s %s\n", dados->reservas[0].nome, dados->reservas[0].sobrenome);
     }
     if(*comando == 'C' && *(comando+1) == 'A'){
         cancelar_reserva(dados);
@@ -361,6 +382,7 @@ void comando(Dados *dados){
     if(*comando == 'F' && *(comando+1) == 'D'){
         fechar_dia(*dados);
     }
+    
 }
 
 int main(void) {
