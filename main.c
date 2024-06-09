@@ -129,16 +129,27 @@ void salvar_arquivo(Dados dados) {
 
 void modificar_reserva(Dados *dados) {
     char cpf_consulta_mod[15];
-    char *nome_mod;
-    char *sobre_mod;
-    char cpf_mod[15];
-    char *assento_mod;
-    scanf("%s %s %s %s %s", cpf_consulta_mod, nome_mod, sobre_mod, cpf_mod, assento);
+    scanf(" %s", cpf_consulta_mod);
+    char *nome_mod = (char *) malloc(100 * sizeof(char));
+    scanf(" %s", nome_mod);
+    nome_mod = (char *) realloc(nome_mod, strlen(nome_mod)*sizeof(char));
+    char *sobre_mod = (char *) malloc(100 * sizeof(char));
+    scanf(" %s", sobre_mod);
+    sobre_mod = (char *) realloc(sobre_mod, strlen(sobre_mod)*sizeof(char));
+    char *cpf_mod = (char *) malloc(15 * sizeof(char));
+    scanf(" %s", cpf_mod);
+    char *assento_mod = (char *) malloc(100 * sizeof(char));
+    scanf(" %s", assento_mod);
+    assento_mod = (char *) realloc(assento_mod, strlen(assento_mod)*sizeof(char));
     for (int i = 0; i < dados->num_reservas; i++) {
-        if (strcmp(dados->reservas[i].cpf, cpf_consulta_mod) == 0 ) {
+        if (strcmp(dados->reservas[i].cpf, cpf_consulta_mod) == 0) {
+            free(dados->reservas[i].cpf);
             dados->reservas[i].cpf = cpf_mod;
+            free(dados->reservas[i].nome);
             dados->reservas[i].nome = nome_mod;
+            free(dados->reservas[i].sobrenome);
             dados->reservas[i].sobre = sobre_mod;
+            free(dados->reservas[i].numero_assento);
             dados->reservas[i].numero_assento = assento_mod;
             printf("Reserva Modificada:\n");
             printf("%s\n", cpf_consulta_mod);
@@ -171,7 +182,7 @@ void modificar_reserva(Dados *dados) {
 
 void cancelar_reserva(Dados *dados) {
     char cancelado[15];
-    scanf("%s", cancelado);
+    scanf(" %s", cancelado);
     for (int i = 0; i < dados->num_reservas; i++){
         if (strcmp(dados->reservas[i].cpf, cancelado) == 0){
             for (int j = i; j < dados->num_reservas - 1; j++){
