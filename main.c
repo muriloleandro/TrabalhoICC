@@ -149,9 +149,44 @@ void salvar_arquivo(Dados dados) {
 
 void sair(Dados dados) {
     salvar_arquivo(dados);
+    //agora livraremos a memoria alocada dinamicamente durante execucao do programa//
+    free(dados.numero_do_voo);
+    free(dados.origem);
+    free(dados.destino);
+    for(int i=0; i<dados.num_reservas; i++){
+        free(dados.reservas[i].nome);
+        free(dados.reservas[i].sobrenome);
+        free(dados.reservas[i].cpf);
+        free(dados.reservas[i].numero_assento);
+    }    
     exit(0);
 }
 
+void abrir_voo(Dados *dados) {
+    dados->aberto = 1;
+    scanf(" %d", &dados->assentos);
+    scanf(" %f", &dados->valores[0]);
+    scanf(" %f", &dados->valores[1]);
+}
+
+void fechar_voo(Dados *dados) {
+    dados->aberto = 0;
+    float total = 0;
+    int i, tipo;
+    printf("Voo Fechado!\n\n");
+    for (i = 0; i < dados->num_reservas; i++) {
+        tipo = dados->reservas[i].classe;
+        total += dados->valores[tipo];
+
+        printf("%s\n", dados->reservas[i].cpf);
+        printf("%s ", dados->reservas[i].nome);
+        printf("%s\n", dados->reservas[i].sobrenome);
+        printf("%s\n\n", dados->reservas[i].numero_assento);
+    }
+    printf("Valor Total: %.2f\n", total);
+    printf("--------------------------------------------------\n");
+    sair(*dados);
+}
 
 //A função Modificar Reserva recebe um CPF como input e vai inserir na reserva do CPF os dados novos como CPF novo, nome novo, etc...
 //Como não é possível saber o tamanho das strings préviamente, alocamos um tamanho grande para receber a string, corrigimos o tamanho com realloc,
@@ -183,7 +218,7 @@ void modificar_reserva(Dados *dados) {
             printf("Reserva Modificada:\n");
             printf("%s\n", cpf_consulta_mod);
             printf("%s %s\n", dados->reservas[i].nome, dados->reservas[i].sobrenome);
-            printf("%d/%d/%d\n", dados->data_da_viagem.dia, dados->data_da_viagem.mes, dados->data_da_viagem.ano);
+            printf("%2d/%2d/%d\n", dados->data_da_viagem.dia, dados->data_da_viagem.mes, dados->data_da_viagem.ano);
             printf("Voo: %s\n", dados->numero_do_voo);
             printf("Assento: %s\n", dados->reservas[i].numero_assento);
             if (dados->reservas[i].classe == 0) {
@@ -213,34 +248,21 @@ void cancelar_reserva(Dados *dados) {
     scanf(" %s", cancelado);
     for (int i = 0; i < dados->num_reservas; i++){                 //Essa parte itera os itens da lista de reservas ate achar um CPF igual ao do input.
         if (strcmp(dados->reservas[i].cpf, cancelado) == 0){
+            free(dados->reservas[i].nome);
+            free(dados->reservas[i].sobrenome);
+            free(dados->reservas[i].cpf);
+            free(dados->reservas[i].numero_assento);
             for (int j = i; j < dados->num_reservas - 1; j++){       //Essa parte vai mover os itens da lista de reserva que estao apos o CPF cancelado em 1 posicao
                 dados->reservas[j] = dados->reservas[j + 1];          //para tras. Ele faz isso n - 1 vezes para nao puxar um lixo de memoria para a ultima posicao.
             }
             dados->num_reservas = dados->num_reservas - 1;    //Esse trecho diminui uma reserva
             dados->reservas = (Reserva *) realloc(dados->reservas, dados->num_reservas * sizeof(Reserva));  //Esse pedaço faz um Realloc no Vetor de Structs Reservas
-            printf("%s\n", cancelado);                                                                      //para ajustar o espaço alocado na Heap para o novo tamanho do Vetor.
-            printf("%s %s\n", dados->reservas[i].nome, dados->reservas[i].sobrenome);
-            printf("%s\n", dados->data_da_viagem);
-            printf("Voo: %s\n", dados->numero_do_voo);
-            printf("Assento: %s\n", dados->reservas[i].numero_assento);
-            if (dados->reservas[i].classe == 0) {
-                printf("Classe: economica\n");
-            }
-            else {
-                printf("Classe: executiva\n");
-            }
-            printf("Trecho: %s %s\n", dados->origem, dados->destino);
-            if (dados->reservas[i].classe == 0) {
-                printf("Valor: %s\n", dados->valores[0]);
-            }
-            else {
-                printf("Valor: %s\n", dados->valores[1]);
-            }
+                                                                                                          //para ajustar o espaço alocado na Heap para o novo tamanho do Vetor.
+
             dados->assentos = dados->assentos + 1;   //Esse pedaço adiciona 1 ao numero de assentos (No cancelamento um assento é livrado).
             break;
         }
     }
-    printf("--------------------------------------------------\n");
 }
 
 //A Função Fechar Dia escreve a quantidade de reservas (calculada anteriormente), calcula a posição reitarando a soma dos preços das classes e escreve a posição.
@@ -262,43 +284,51 @@ void fechar_dia(Dados dados) {
 }
 
 void ler_reserva(Dados *dados){
-    float valor;
-    char exec[10] = "executiva";
-    char classe_do_voo[10];
+    //essa funcao visa ler e armazenar as reservas no aviao que serao fornecidas pelo//
+    //usuario, guardando-as na memoria via alocacao dinamica para otimizar memoria//
+    float valor;//criado para armazenar o valor fornecido, que sera descartado, considerando//
+    //o fato dos 2 valores (economico e executivo) ja serem providenciados em 'abrir voo'//
+    char exec[10] = "executiva";//pra comparar com a classe fornecida pelo usuario//
+    char classe_do_voo[10];//a dita classe que sera comparada//
 
     if(dados->assentos == 0){
         fechar_voo(dados);
-    }
+    }//checa se existem assentos disponiveis; caso nao, ele volta para a main para falar//
+    //que o voo esta cheio//
 
-    dados->num_reservas++;
+    dados->num_reservas++;//aumenta o numero de reservas, ja que um novo usuario esta sendo//
+    //cadastrado no sistema//
 
     if (dados->num_reservas == 1) {
         dados->reservas = (Reserva *) malloc(sizeof(Reserva));
     } else {
         dados->reservas = (Reserva *) realloc(dados->reservas, dados->num_reservas * sizeof(Reserva));
-    }
+    }//realoca mais espaço para a nova reserva que sera armazenada;
 
-    int n = dados->num_reservas-1;
+    int n = dados->num_reservas-1;//n serve para especificar qual posicao do vetor de structs//
+    //'reservas' estamos acessando//
 
     dados->reservas[n].nome = (char *) malloc(100*sizeof(char));
     scanf(" %s", dados->reservas[n].nome);
     dados->reservas[n].nome = realloc(dados->reservas[n].nome, strlen(dados->reservas[n].nome));
+    //armazena o nome do usuario na memoria//
 
     dados->reservas[n].sobrenome = (char *) malloc(100*sizeof(char));
     scanf(" %s", dados->reservas[n].sobrenome);
     dados->reservas[n].sobrenome = realloc(dados->reservas[n].sobrenome, strlen(dados->reservas[n].sobrenome));
+    //armazena seu sobrenome//
 
     dados->reservas[n].cpf = (char *) malloc(15 * sizeof(char));
-    scanf(" %s", dados->reservas[n].cpf);
+    scanf(" %s", dados->reservas[n].cpf);//armazena o CPF//
 
     scanf("%d", &dados->data_da_viagem.dia);
     scanf("%d", &dados->data_da_viagem.mes);
-    scanf("%d", &dados->data_da_viagem.ano);
+    scanf("%d", &dados->data_da_viagem.ano);//armazena as datas//
 
-    scanf(" %s", dados->numero_do_voo);
+    scanf(" %s", dados->numero_do_voo);//armazena o numero do voo//
 
     dados->reservas[n].numero_assento = (char*)malloc(10*sizeof(char));
-    scanf(" %s", dados->reservas[n].numero_assento);
+    scanf(" %s", dados->reservas[n].numero_assento);//reserva os assentos//
     dados->reservas[n].numero_assento = realloc(dados->reservas[n].numero_assento, strlen(dados->reservas[n].numero_assento));
 
     scanf(" %s", classe_do_voo);
@@ -306,21 +336,23 @@ void ler_reserva(Dados *dados){
         dados->reservas[n].classe = 1;
     } else {
         dados->reservas[n].classe = 0;
-    }
+    }//checa, comparando com 'executiva', qual a classe financeira do voo do sujeito//
 
-    scanf("%f", &valor);
+    scanf("%f", &valor);//guarda o valor, que eh inutil nesse contexto//
 
     dados->origem = (char*)malloc(100*sizeof(char));
     scanf(" %s", dados->origem);
-    dados->origem = realloc(dados->origem, strlen(dados->origem));
+    dados->origem = realloc(dados->origem, strlen(dados->origem));//guarda origem do voo//
 
     dados->destino = (char*)malloc(100*sizeof(char));
     scanf(" %s", dados->destino);
-    dados->destino = realloc(dados->destino, strlen(dados->destino));
+    dados->destino = realloc(dados->destino, strlen(dados->destino));//guarda destino do voo//
+
     dados->assentos = dados->assentos - 1;
 }
 
 void consultar_reserva(Dados *dados){
+    //esta funcao visa providenciar a consulta dos dados da reserva do passageiro, via CPF//
     int num;
     char cpf_consultado [15];
     scanf(" %s", cpf_consultado);
@@ -329,13 +361,14 @@ void consultar_reserva(Dados *dados){
             num=i;
             break;
         }
-    }
+    }//desejamos descobrir em qual parte do vetor 'reservas' esta o CPF que buscamos, e//
+    //armazenaremos em 'num'//
     printf("%s\n", dados->reservas[num].cpf);
     printf("%s %s\n", dados->reservas[num].nome, dados->reservas[num].sobrenome);
-    printf("%hu/%hu/%hu\n", dados->data_da_viagem.dia, dados->data_da_viagem.mes, dados->data_da_viagem.ano);
+    printf("%2d/%2d/%d\n", dados->data_da_viagem.dia, dados->data_da_viagem.mes, dados->data_da_viagem.ano);
     printf("Voo: %s\n", dados->numero_do_voo);
     printf("Assento: %s\n", dados->reservas[num].numero_assento);
-    if (dados->reservas[num].classe == 0) {
+    if (dados->reservas[num].classe == 0) {//checa o valor de classe para descobri-la//
         printf("Classe: economica\n");
     } else {
         printf("Classe: executiva\n");
@@ -345,33 +378,8 @@ void consultar_reserva(Dados *dados){
     printf("--------------------------------------------------\n");
 }
 
-void abrir_voo(Dados *dados) {
-    dados->aberto = 1;
-    scanf(" %d", &dados->assentos);
-    scanf(" %f", &dados->valores[0]);
-    scanf(" %f", &dados->valores[1]);
-}
-
-void fechar_voo(Dados *dados) {
-    dados->aberto = 0;
-    float total = 0;
-    int i, tipo;
-    printf("Voo Fechado!\n\n");
-    for (i = 0; i < dados->num_reservas; i++) {
-        tipo = dados->reservas[i].classe;
-        total += dados->valores[tipo];
-
-        printf("%s\n", dados->reservas[i].cpf);
-        printf("%s ", dados->reservas[i].nome);
-        printf("%s\n", dados->reservas[i].sobrenome);
-        printf("%s\n\n", dados->reservas[i].numero_assento);
-    }
-    printf("Valor Total: %.2f\n", total);
-    printf("--------------------------------------------------\n");
-    sair(*dados);
-}
-
-void comando(Dados *dados){
+void comando(Dados *dados){//com essa funcao, queremos descobrir a partir das primeiras duas//
+//iniciais fornecidas qual comando devemos executar//
     char comando[3];
     scanf("%s", comando);
     if(*comando == 'A'){
