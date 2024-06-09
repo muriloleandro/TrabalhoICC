@@ -10,10 +10,9 @@ typedef struct datas {
 } Data;
 
 typedef struct reserva {
-    char numero_voo[5];
     char *nome;
     char *sobrenome;
-    char cpf[15];
+    char *cpf;
     char *numero_assento;
     int classe; // 0 ou 1 ; 0 = economica ; 1 = executiva ;
 } Reserva;
@@ -156,7 +155,7 @@ void modificar_reserva(Dados *dados) {
             free(dados->reservas[i].nome);
             dados->reservas[i].nome = nome_mod;
             free(dados->reservas[i].sobrenome);
-            dados->reservas[i].sobre = sobre_mod;
+            dados->reservas[i].sobrenome = sobre_mod;
             free(dados->reservas[i].numero_assento);
             dados->reservas[i].numero_assento = assento_mod;
             printf("Reserva Modificada:\n");
