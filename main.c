@@ -78,15 +78,15 @@ void ler_arquivo(Dados *dados) {
 
     int tam_part, tam_dest, tam_voo;
     fscanf(fp, " %d", &tam_voo);
-    dados->origem = (char *) malloc(tam_voo * sizeof(char));
+    dados->numero_do_voo = (char *) malloc(tam_voo);
     fscanf(fp, " %s", dados->numero_do_voo);
 
     fscanf(fp, " %d", &tam_part);
-    dados->origem = (char *) malloc(tam_part * sizeof(char));
+    dados->origem = (char *) malloc(tam_part);
     fscanf(fp, " %s", dados->origem);
 
     fscanf(fp, " %d", &tam_dest);
-    dados->destino = (char *) malloc(tam_dest * sizeof(char));
+    dados->destino = (char *) malloc(tam_dest);
     fscanf(fp, " %s", dados->destino);
 
     int tam_reservas = dados->num_reservas * sizeof(Reserva);
@@ -95,18 +95,18 @@ void ler_arquivo(Dados *dados) {
     int tam_nome, tam_sobrenome, tam_assento;
     for (i = 0; i < dados->num_reservas; i++) {
         fscanf(fp, " %d", &tam_nome);
-        dados->reservas[i].nome = (char *) malloc(tam_nome * sizeof(char));
+        dados->reservas[i].nome = (char *) malloc(tam_nome);
         fscanf(fp, " %s", dados->reservas[i].nome);
 
         fscanf(fp, " %d", &tam_sobrenome);
-        dados->reservas[i].sobrenome = (char *) malloc(tam_sobrenome * sizeof(char));
+        dados->reservas[i].sobrenome = (char *) malloc(tam_sobrenome);
         fscanf(fp, " %s", dados->reservas[i].sobrenome);
 
-        dados->reservas[i].cpf = (char *) malloc(15 * sizeof(char));
+        dados->reservas[i].cpf = (char *) malloc(15);
         fscanf(fp, " %s", dados->reservas[i].cpf);
 
         fscanf(fp, " %d", &tam_assento);
-        dados->reservas[i].numero_assento = (char *) malloc(tam_assento * sizeof(char));
+        dados->reservas[i].numero_assento = (char *) malloc(tam_assento);
         fscanf(fp, " %s", dados->reservas[i].numero_assento);
 
         fscanf(fp, " %d", &dados->reservas[i].classe);
@@ -229,20 +229,20 @@ void modificar_reserva(Dados *dados) {
     char cpf_consulta_mod[15];                                                  
     scanf(" %s", cpf_consulta_mod);                                             
 
-    char *nome_mod = (char *) malloc(100 * sizeof(char));
+    char *nome_mod = (char *) malloc(100);
     scanf(" %s", nome_mod);
-    nome_mod = (char *) realloc(nome_mod, strlen(nome_mod) * sizeof(char));
+    nome_mod = (char *) realloc(nome_mod, strlen(nome_mod));
 
-    char *sobre_mod = (char *) malloc(100 * sizeof(char));
+    char *sobre_mod = (char *) malloc(100);
     scanf(" %s", sobre_mod);
-    sobre_mod = (char *) realloc(sobre_mod, strlen(sobre_mod) * sizeof(char));
+    sobre_mod = (char *) realloc(sobre_mod, strlen(sobre_mod));
 
-    char *cpf_mod = (char *) malloc(15 * sizeof(char));
+    char *cpf_mod = (char *) malloc(15);
     scanf(" %s", cpf_mod);
 
-    char *assento_mod = (char *) malloc(100 * sizeof(char));
+    char *assento_mod = (char *) malloc(100);
     scanf(" %s", assento_mod);
-    assento_mod = (char *) realloc(assento_mod, strlen(assento_mod) * sizeof(char));
+    assento_mod = (char *) realloc(assento_mod, strlen(assento_mod));
 
     for (int i = 0; i < dados->num_reservas; i++) {
         if (strcmp(dados->reservas[i].cpf, cpf_consulta_mod) == 0) {        
@@ -347,7 +347,7 @@ void ler_reserva(Dados *dados){
     char exec[10] = "executiva";//pra comparar com a classe fornecida pelo usuario//
     char classe_do_voo[10];//a dita classe que sera comparada//
 
-    if(dados->assentos == 0){
+    if(dados->assentos == 0) {
         fechar_voo(dados);
     }//checa se existem assentos disponiveis; caso nao, ele volta para a main para falar//
     //que o voo esta cheio//
@@ -364,26 +364,28 @@ void ler_reserva(Dados *dados){
     int n = dados->num_reservas-1;//n serve para especificar qual posicao do vetor de structs//
     //'reservas' estamos acessando//
 
-    dados->reservas[n].nome = (char *) malloc(100*sizeof(char));
+    dados->reservas[n].nome = (char *) malloc(100);
     scanf(" %s", dados->reservas[n].nome);
     dados->reservas[n].nome = (char *) realloc(dados->reservas[n].nome, strlen(dados->reservas[n].nome));
     //armazena o nome do usuario na memoria//
 
-    dados->reservas[n].sobrenome = (char *) malloc(100*sizeof(char));
+    dados->reservas[n].sobrenome = (char *) malloc(100);
     scanf(" %s", dados->reservas[n].sobrenome);
     dados->reservas[n].sobrenome = (char *) realloc(dados->reservas[n].sobrenome, strlen(dados->reservas[n].sobrenome));
     //armazena seu sobrenome//
 
-    dados->reservas[n].cpf = (char *) malloc(15 * sizeof(char));
+    dados->reservas[n].cpf = (char *) malloc(15);
     scanf(" %s", dados->reservas[n].cpf);//armazena o CPF//
 
     scanf("%d", &dados->data_da_viagem.dia);
     scanf("%d", &dados->data_da_viagem.mes);
     scanf("%d", &dados->data_da_viagem.ano);//armazena as datas//
 
+    dados->numero_do_voo = (char *) malloc(10);
     scanf(" %s", dados->numero_do_voo);//armazena o numero do voo//
+    dados->numero_do_voo = (char *) realloc(dados->numero_do_voo, strlen(dados->numero_do_voo));
 
-    dados->reservas[n].numero_assento = (char *) malloc(10*sizeof(char));
+    dados->reservas[n].numero_assento = (char *) malloc(10);
     scanf(" %s", dados->reservas[n].numero_assento);//reserva os assentos//
     dados->reservas[n].numero_assento = (char *) realloc(dados->reservas[n].numero_assento, strlen(dados->reservas[n].numero_assento));
 
@@ -396,11 +398,11 @@ void ler_reserva(Dados *dados){
 
     scanf("%f", &valor);//guarda o valor, que eh inutil nesse contexto//
 
-    dados->origem = (char *) malloc(100 * sizeof(char));
+    dados->origem = (char *) malloc(100);
     scanf(" %s", dados->origem);
     dados->origem = (char *) realloc(dados->origem, strlen(dados->origem));//guarda origem do voo//
 
-    dados->destino = (char *) malloc(100 * sizeof(char));
+    dados->destino = (char *) malloc(100);
     scanf(" %s", dados->destino);
     dados->destino = (char *) realloc(dados->destino, strlen(dados->destino));//guarda destino do voo//
 
