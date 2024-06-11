@@ -93,6 +93,12 @@ void ler_arquivo(Dados *dados) {
     dados->destino = (char *) malloc(tam_dest+1);
     fscanf(fp, " %s", dados->destino);
 
+    // apenas alocar e ler reservas se houver
+    if (dados->num_reservas == 0) {
+        fclose(fp);
+        return;
+    }
+
     int tam_reservas = dados->num_reservas * sizeof(Reserva);
     dados->reservas = (Reserva *) malloc(tam_reservas);
     int i;
