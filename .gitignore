@@ -1,3 +1,4 @@
 main
 main.exe
 DATA.DAT
+valgrind-out.txt

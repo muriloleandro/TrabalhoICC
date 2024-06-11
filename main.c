@@ -23,8 +23,8 @@ typedef struct reserva {
 //O Struct Dados guarda valores gerais do voo como se o voo ja foi aberto, quantos assentos estão disponiveis
 typedef struct dados {
     int aberto;          //variável que guarda se o File já foi aberto pela primeira vez (1) ou não (0)
-    int assentos;        //número de assentos do voô
-    float valores[2];    //Guarda os preços das classes. Convenção: 0 = economica ; 1 = executiva ;
+    int assentos;        //número de assentos do voo
+    float valores[2];    //Guarda os preços das classes. Convenção: [0] = economica ; [1] = executiva ;
     Reserva *reservas;   //Vetor de structs para acessar a Struct Reserva de cada cliente
     int num_reservas;    //Contador de reservas feitas
     Data data_da_viagem; //Struct com data separada em dia mês e ano
@@ -36,10 +36,10 @@ typedef struct dados {
 //funções:
 
 /*
- # Os valores da struct 'dados' são salvos no arquivo,
+ - Os valores da struct 'dados' são salvos no arquivo,
    junto do tamanho das arrays nela.
- # Nome: "DATA.DAT"
- # Especificação do Arquivo:
+ - Nome: "DATA.DAT"
+ - Especificação do Arquivo:
 aberto asssentos valores[0] valores[1] num_reservas
 dia mes ano tam_voo numero_voo tam_origem origem tam_dest destino
 
@@ -54,16 +54,20 @@ void ler_arquivo(Dados *dados) {
     FILE *fp;
     fp = fopen("DATA.DAT", "r");
 
-    // caso o arquivo não exista, inicialize valores genéricos
+    // caso o arquivo não exista, deixe valores genéricos
+    dados->aberto = 0;
+    dados->assentos = 0;
+    dados->valores[0] = 0.0;
+    dados->valores[1] = 0.0;
+    dados->num_reservas = 0;
+    dados->data_da_viagem.dia = 1;
+    dados->data_da_viagem.mes = 1;
+    dados->data_da_viagem.ano = 1970;
+    dados->numero_do_voo = NULL;
+    dados->origem = NULL;
+    dados->destino = NULL;
+    dados->reservas = NULL;
     if (fp == NULL) {
-        dados->aberto = 0;
-        dados->assentos = 0;
-        dados->valores[0] = 0.0;
-        dados->valores[1] = 0.0;
-        dados->num_reservas = 0;
-        dados->data_da_viagem.dia = 1;
-        dados->data_da_viagem.mes = 1;
-        dados->data_da_viagem.ano = 1970;
         return;
     }
 
@@ -78,15 +82,15 @@ void ler_arquivo(Dados *dados) {
 
     int tam_part, tam_dest, tam_voo;
     fscanf(fp, " %d", &tam_voo);
-    dados->numero_do_voo = (char *) malloc(tam_voo);
+    dados->numero_do_voo = (char *) malloc(tam_voo+1);
     fscanf(fp, " %s", dados->numero_do_voo);
 
     fscanf(fp, " %d", &tam_part);
-    dados->origem = (char *) malloc(tam_part);
+    dados->origem = (char *) malloc(tam_part+1);
     fscanf(fp, " %s", dados->origem);
 
     fscanf(fp, " %d", &tam_dest);
-    dados->destino = (char *) malloc(tam_dest);
+    dados->destino = (char *) malloc(tam_dest+1);
     fscanf(fp, " %s", dados->destino);
 
     int tam_reservas = dados->num_reservas * sizeof(Reserva);
@@ -95,18 +99,18 @@ void ler_arquivo(Dados *dados) {
     int tam_nome, tam_sobrenome, tam_assento;
     for (i = 0; i < dados->num_reservas; i++) {
         fscanf(fp, " %d", &tam_nome);
-        dados->reservas[i].nome = (char *) malloc(tam_nome);
+        dados->reservas[i].nome = (char *) malloc(tam_nome+1);
         fscanf(fp, " %s", dados->reservas[i].nome);
 
         fscanf(fp, " %d", &tam_sobrenome);
-        dados->reservas[i].sobrenome = (char *) malloc(tam_sobrenome);
+        dados->reservas[i].sobrenome = (char *) malloc(tam_sobrenome+1);
         fscanf(fp, " %s", dados->reservas[i].sobrenome);
 
         dados->reservas[i].cpf = (char *) malloc(15);
         fscanf(fp, " %s", dados->reservas[i].cpf);
 
         fscanf(fp, " %d", &tam_assento);
-        dados->reservas[i].numero_assento = (char *) malloc(tam_assento);
+        dados->reservas[i].numero_assento = (char *) malloc(tam_assento+1);
         fscanf(fp, " %s", dados->reservas[i].numero_assento);
 
         fscanf(fp, " %d", &dados->reservas[i].classe);
@@ -116,9 +120,9 @@ void ler_arquivo(Dados *dados) {
 }
 
 /*
- a função segue a mesma lógica da leitura,
+ A função segue a mesma lógica da leitura,
  exceto que printa no arquivo ao invés de escanear;
- os tamanhos das strings são armazenadas para alocação posterior
+ Os tamanhos das strings são armazenadas para leitura posterior
 */
 void salvar_arquivo(Dados dados) {
     FILE *fp;
@@ -177,18 +181,22 @@ void sair(Dados dados) {
     free(dados.numero_do_voo);
     free(dados.origem);
     free(dados.destino);
-    for(int i=0; i<dados.num_reservas; i++){
+    for (int i = 0; i < dados.num_reservas; i++) {
         free(dados.reservas[i].nome);
         free(dados.reservas[i].sobrenome);
         free(dados.reservas[i].cpf);
         free(dados.reservas[i].numero_assento);
-    }    
+    }
+    if (dados.num_reservas != 0) {
+        free(dados.reservas);
+    }
     exit(0);
 }
 
 /*
- armazena os valores passados no comando
- marca o voo como aberto
+ - Armazena os valores passados no comando
+ - Marca o voo como aberto
+ - Inicializa vetores que se repetirão como NULL
 */
 void abrir_voo(Dados *dados) {
     dados->aberto = 1;
@@ -198,8 +206,8 @@ void abrir_voo(Dados *dados) {
 }
 
 /*
- printa os dados expecificados e executa sair()
- marca o voo como fechado
+ - Printa os dados expecificados e executa sair()
+ - Marca o voo como fechado
 */
 void fechar_voo(Dados *dados) {
     dados->aberto = 0;
@@ -231,18 +239,18 @@ void modificar_reserva(Dados *dados) {
 
     char *nome_mod = (char *) malloc(100);
     scanf(" %s", nome_mod);
-    nome_mod = (char *) realloc(nome_mod, strlen(nome_mod));
+    nome_mod = (char *) realloc(nome_mod, strlen(nome_mod)+1);
 
     char *sobre_mod = (char *) malloc(100);
     scanf(" %s", sobre_mod);
-    sobre_mod = (char *) realloc(sobre_mod, strlen(sobre_mod));
+    sobre_mod = (char *) realloc(sobre_mod, strlen(sobre_mod)+1);
 
     char *cpf_mod = (char *) malloc(15);
     scanf(" %s", cpf_mod);
 
     char *assento_mod = (char *) malloc(100);
     scanf(" %s", assento_mod);
-    assento_mod = (char *) realloc(assento_mod, strlen(assento_mod));
+    assento_mod = (char *) realloc(assento_mod, strlen(assento_mod)+1);
 
     for (int i = 0; i < dados->num_reservas; i++) {
         if (strcmp(dados->reservas[i].cpf, cpf_consulta_mod) == 0) {        
@@ -306,7 +314,12 @@ void cancelar_reserva(Dados *dados) {
             }
             dados->num_reservas = dados->num_reservas - 1;    
             //Esse trecho diminui uma reserva
-            dados->reservas = (Reserva *) realloc(dados->reservas, dados->num_reservas * sizeof(Reserva));  
+            if (dados->num_reservas != 0) {
+                dados->reservas = (Reserva *) realloc(dados->reservas, dados->num_reservas * sizeof(Reserva));
+            } else {
+                free(dados->reservas);
+            }
+            
             //Esse pedaço faz um Realloc no Vetor de Structs Reservas
             //para ajustar o espaço alocado na Heap para o novo tamanho do Vetor.
                                                                                                           
@@ -366,12 +379,12 @@ void ler_reserva(Dados *dados){
 
     dados->reservas[n].nome = (char *) malloc(100);
     scanf(" %s", dados->reservas[n].nome);
-    dados->reservas[n].nome = (char *) realloc(dados->reservas[n].nome, strlen(dados->reservas[n].nome));
+    dados->reservas[n].nome = (char *) realloc(dados->reservas[n].nome, strlen(dados->reservas[n].nome)+1);
     //armazena o nome do usuario na memoria//
 
     dados->reservas[n].sobrenome = (char *) malloc(100);
     scanf(" %s", dados->reservas[n].sobrenome);
-    dados->reservas[n].sobrenome = (char *) realloc(dados->reservas[n].sobrenome, strlen(dados->reservas[n].sobrenome));
+    dados->reservas[n].sobrenome = (char *) realloc(dados->reservas[n].sobrenome, strlen(dados->reservas[n].sobrenome)+1);
     //armazena seu sobrenome//
 
     dados->reservas[n].cpf = (char *) malloc(15);
@@ -381,13 +394,16 @@ void ler_reserva(Dados *dados){
     scanf("%d", &dados->data_da_viagem.mes);
     scanf("%d", &dados->data_da_viagem.ano);//armazena as datas//
 
-    dados->numero_do_voo = (char *) malloc(10);
+    if (dados->numero_do_voo != NULL) {
+        free(dados->numero_do_voo);
+    }
+    dados->numero_do_voo = (char *) malloc(100);
     scanf(" %s", dados->numero_do_voo);//armazena o numero do voo//
-    dados->numero_do_voo = (char *) realloc(dados->numero_do_voo, strlen(dados->numero_do_voo));
+    dados->numero_do_voo = (char *) realloc(dados->numero_do_voo, strlen(dados->numero_do_voo)+1);
 
     dados->reservas[n].numero_assento = (char *) malloc(10);
     scanf(" %s", dados->reservas[n].numero_assento);//reserva os assentos//
-    dados->reservas[n].numero_assento = (char *) realloc(dados->reservas[n].numero_assento, strlen(dados->reservas[n].numero_assento));
+    dados->reservas[n].numero_assento = (char *) realloc(dados->reservas[n].numero_assento, strlen(dados->reservas[n].numero_assento)+1);
 
     scanf(" %s", classe_do_voo);
     if (strcmp(exec, classe_do_voo) == 0) {
@@ -398,13 +414,19 @@ void ler_reserva(Dados *dados){
 
     scanf("%f", &valor);//guarda o valor, que eh inutil nesse contexto//
 
+    if (dados->origem != NULL) {
+        free(dados->origem);
+    }
     dados->origem = (char *) malloc(100);
     scanf(" %s", dados->origem);
-    dados->origem = (char *) realloc(dados->origem, strlen(dados->origem));//guarda origem do voo//
+    dados->origem = (char *) realloc(dados->origem, strlen(dados->origem)+1);//guarda origem do voo//
 
+    if (dados->destino != NULL) {
+        free(dados->destino);
+    }
     dados->destino = (char *) malloc(100);
     scanf(" %s", dados->destino);
-    dados->destino = (char *) realloc(dados->destino, strlen(dados->destino));//guarda destino do voo//
+    dados->destino = (char *) realloc(dados->destino, strlen(dados->destino)+1);//guarda destino do voo//
 
     dados->assentos = dados->assentos - 1;
 }
@@ -464,9 +486,10 @@ void comando(Dados *dados){//com essa funcao, queremos descobrir a partir das pr
 }
 
 /*
- A lógica da main() consiste em: criar um struct dos dados, e ler eles do arquivo
- entrar num loop infinito de leitura de comandos
- o programa sairá quando forem executados o fechamento do voo e fechamento do dia
+ A lógica da main() consiste em:
+ - Criar um struct dos dados, e ler eles do arquivo
+ - Entrar num loop infinito de leitura de comandos
+ O programa sairá quando forem executados o fechamento do voo e fechamento do dia
 */
 int main(void) {
     Dados dados;
