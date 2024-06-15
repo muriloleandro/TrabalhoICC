@@ -52,7 +52,7 @@ cpf tam_assento numero_assento classe
 */
 void ler_arquivo(Dados *dados) {
     FILE *fp;
-    fp = fopen("DATA.DAT", "r");
+    fp = fopen("DATA.DAT", "rb");
 
     // caso o arquivo não exista, deixe valores genéricos
     dados->aberto = 0;
@@ -71,27 +71,34 @@ void ler_arquivo(Dados *dados) {
         return;
     }
 
-    fscanf(fp, "%d", &dados->aberto);
-    fscanf(fp, " %d", &dados->assentos);
-    fscanf(fp, " %f", &dados->valores[0]);
-    fscanf(fp, " %f", &dados->valores[1]);
-    fscanf(fp, " %d", &dados->num_reservas);
-    fscanf(fp, " %d", &dados->data_da_viagem.dia);
-    fscanf(fp, " %d", &dados->data_da_viagem.mes);
-    fscanf(fp, " %d", &dados->data_da_viagem.ano);
+    fread(&dados->aberto, sizeof(int), 1, fp);
+    fread(&dados->assentos, sizeof(int), 1, fp);
+    fread(&dados->valores[0], 1, sizeof(float), fp);
+    fread(&dados->valores[1], 1, sizeof(float), fp);
+    fread(&dados->num_reservas, sizeof(int), 1, fp);
+    fread(&dados->data_da_viagem.dia, sizeof(int), 1, fp);
+    fread(&dados->data_da_viagem.mes, sizeof(int), 1, fp);
+    fread(&dados->data_da_viagem.ano, sizeof(int), 1, fp);
 
     int tam_part, tam_dest, tam_voo;
-    fscanf(fp, " %d", &tam_voo);
+
+    //ler numero do voo
+    fread(&tam_voo, sizeof(int), 1, fp);
     dados->numero_do_voo = (char *) malloc(tam_voo+1);
-    fscanf(fp, " %s", dados->numero_do_voo);
+    fread(dados->numero_do_voo, 1, tam_voo, fp);
+    dados->numero_do_voo[tam_voo] = '\0';
 
-    fscanf(fp, " %d", &tam_part);
+    //ler origem do voo
+    fread(&tam_part, sizeof(int), 1, fp);
     dados->origem = (char *) malloc(tam_part+1);
-    fscanf(fp, " %s", dados->origem);
+    fread(dados->origem, 1, tam_part, fp);
+    dados->origem[tam_part] = '\0';
 
-    fscanf(fp, " %d", &tam_dest);
+    //ler destino do voo
+    fread(&tam_dest, sizeof(int), 1, fp);
     dados->destino = (char *) malloc(tam_dest+1);
-    fscanf(fp, " %s", dados->destino);
+    fread(dados->destino, 1, tam_dest, fp);
+    dados->destino[tam_dest] = '\0';
 
     // apenas alocar e ler reservas se houver
     if (dados->num_reservas == 0) {
@@ -104,22 +111,30 @@ void ler_arquivo(Dados *dados) {
     int i;
     int tam_nome, tam_sobrenome, tam_assento;
     for (i = 0; i < dados->num_reservas; i++) {
-        fscanf(fp, " %d", &tam_nome);
+        //ler nome
+        fread(&tam_nome, sizeof(int), 1, fp);
         dados->reservas[i].nome = (char *) malloc(tam_nome+1);
-        fscanf(fp, " %s", dados->reservas[i].nome);
+        fread(dados->reservas[i].nome, 1, tam_nome, fp);
+        dados->reservas[i].nome[tam_nome] = '\0';
 
-        fscanf(fp, " %d", &tam_sobrenome);
+        //ler sobrenome
+        fread(&tam_sobrenome, sizeof(int), 1, fp);
         dados->reservas[i].sobrenome = (char *) malloc(tam_sobrenome+1);
-        fscanf(fp, " %s", dados->reservas[i].sobrenome);
+        fread(dados->reservas[i].sobrenome, 1, tam_sobrenome, fp);
+        dados->reservas[i].sobrenome[tam_sobrenome] = '\0';
 
+        //ler cpf
         dados->reservas[i].cpf = (char *) malloc(15);
-        fscanf(fp, " %s", dados->reservas[i].cpf);
+        fread(dados->reservas[i].cpf, 1, 14, fp);
+        dados->reservas[i].cpf[14] = '\0';
 
-        fscanf(fp, " %d", &tam_assento);
+        //ler numero do assento
+        fread(&tam_assento, sizeof(int), 1, fp);
         dados->reservas[i].numero_assento = (char *) malloc(tam_assento+1);
-        fscanf(fp, " %s", dados->reservas[i].numero_assento);
+        fread(dados->reservas[i].numero_assento, 1, tam_assento, fp);
+        dados->reservas[i].numero_assento[tam_assento] = '\0';
 
-        fscanf(fp, " %d", &dados->reservas[i].classe);
+        fread(&dados->reservas[i].classe, sizeof(int), 1, fp);
     }
 
     fclose(fp);
@@ -132,47 +147,51 @@ void ler_arquivo(Dados *dados) {
 */
 void salvar_arquivo(Dados dados) {
     FILE *fp;
-    fp = fopen("DATA.DAT", "w");
-    fprintf(fp, "%d", dados.aberto);
-    fprintf(fp, " %d", dados.assentos);
-    fprintf(fp, " %.2f", dados.valores[0]);
-    fprintf(fp, " %.2f", dados.valores[1]);
-    fprintf(fp, " %d", dados.num_reservas);
-    fprintf(fp, " %d", dados.data_da_viagem.dia);
-    fprintf(fp, " %d", dados.data_da_viagem.mes);
-    fprintf(fp, " %d", dados.data_da_viagem.ano);
+    fp = fopen("DATA.DAT", "wb");
 
-    int tam_part, tam_dest, tam_voo;
-    tam_voo = strlen(dados.numero_do_voo);
-    tam_part = strlen(dados.origem);
-    tam_dest = strlen(dados.destino);
-    fprintf(fp, " %d", tam_voo);
-    fprintf(fp, " %s", dados.numero_do_voo);
-    fprintf(fp, " %d", tam_part);
-    fprintf(fp, " %s", dados.origem);
-    fprintf(fp, " %d", tam_dest);
-    fprintf(fp, " %s", dados.destino);
+    fwrite(&dados.aberto, sizeof(int), 1, fp);
+    fwrite(&dados.assentos, sizeof(int), 1, fp);
+    fwrite(&dados.valores[0], 1, sizeof(float), fp);
+    fwrite(&dados.valores[1], 1, sizeof(float), fp);
+    fwrite(&dados.num_reservas, sizeof(int), 1, fp);
+    fwrite(&dados.data_da_viagem.dia, sizeof(int), 1, fp);
+    fwrite(&dados.data_da_viagem.mes, sizeof(int), 1, fp);
+    fwrite(&dados.data_da_viagem.ano, sizeof(int), 1, fp);
+
+    //armazena numero do voo, origem e destino
+    int tam_voo = strlen(dados.numero_do_voo);
+    int tam_part = strlen(dados.origem);
+    int tam_dest = strlen(dados.destino);
+    fwrite(&tam_voo, sizeof(int), 1, fp);
+    fwrite(dados.numero_do_voo, 1, tam_voo, fp);
+    fwrite(&tam_part, sizeof(int), 1, fp);
+    fwrite(dados.origem, 1, tam_part, fp);
+    fwrite(&tam_dest, sizeof(int), 1, fp);
+    fwrite(dados.destino, 1, tam_dest, fp);
 
     // os dados do vetor reservas são armazenados em sequência
     int i; 
     for (i = 0; i < dados.num_reservas; i++) {
-        int tam_nome, tam_sobrenome, tam_assento;
-        tam_nome = strlen(dados.reservas[i].nome);
-        tam_sobrenome = strlen(dados.reservas[i].sobrenome);
-        tam_assento = strlen(dados.reservas[i].numero_assento);
+        int tam_nome = strlen(dados.reservas[i].nome);
+        int tam_sobrenome = strlen(dados.reservas[i].sobrenome);
+        int tam_assento = strlen(dados.reservas[i].numero_assento);
 
-        fprintf(fp, " %d", tam_nome);
-        fprintf(fp, " %s", dados.reservas[i].nome);
+        //armazena nome
+        fwrite(&tam_nome, sizeof(int), 1, fp);
+        fwrite(dados.reservas[i].nome, 1, tam_nome, fp);
 
-        fprintf(fp, " %d", tam_sobrenome);
-        fprintf(fp, " %s", dados.reservas[i].sobrenome);
+        //armazena sobrenome
+        fwrite(&tam_sobrenome, sizeof(int), 1, fp);
+        fwrite(dados.reservas[i].sobrenome, 1, tam_sobrenome, fp);
 
-        fprintf(fp, " %s", dados.reservas[i].cpf);
+        //armazena cpf
+        fwrite(dados.reservas[i].cpf, 1, 14, fp);
 
-        fprintf(fp, " %d", tam_assento);
-        fprintf(fp, " %s", dados.reservas[i].numero_assento);
+        //armazena numero do assento
+        fwrite(&tam_assento, sizeof(int), 1, fp);
+        fwrite(dados.reservas[i].numero_assento, 1, tam_assento, fp);
 
-        fprintf(fp, " %d", dados.reservas[i].classe);
+        fwrite(&dados.reservas[i].classe, sizeof(int), 1, fp);
     }
 
     fclose(fp);
