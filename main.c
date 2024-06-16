@@ -1,3 +1,11 @@
+//Trabalho do Avião ICC
+
+//Integrantes:
+//Glauco Fleury Corrêa de Moraes - 15456302
+//Murilo Leandro Garcia - 15480943
+//João Pedro Daleffe Dias - 15463342
+
+//includes:
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
