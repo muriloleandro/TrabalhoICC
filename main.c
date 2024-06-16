@@ -167,15 +167,17 @@ void salvar_arquivo(Dados dados) {
     fwrite(&dados.data_da_viagem.ano, sizeof(int), 1, fp);
 
     //armazena numero do voo, origem e destino
-    int tam_voo = strlen(dados.numero_do_voo);
-    int tam_part = strlen(dados.origem);
-    int tam_dest = strlen(dados.destino);
-    fwrite(&tam_voo, sizeof(int), 1, fp);
-    fwrite(dados.numero_do_voo, 1, tam_voo, fp);
-    fwrite(&tam_part, sizeof(int), 1, fp);
-    fwrite(dados.origem, 1, tam_part, fp);
-    fwrite(&tam_dest, sizeof(int), 1, fp);
-    fwrite(dados.destino, 1, tam_dest, fp);
+    if (dados.numero_do_voo != NULL) {
+        int tam_voo = strlen(dados.numero_do_voo);
+        int tam_part = strlen(dados.origem);
+        int tam_dest = strlen(dados.destino);
+        fwrite(&tam_voo, sizeof(int), 1, fp);
+        fwrite(dados.numero_do_voo, 1, tam_voo, fp);
+        fwrite(&tam_part, sizeof(int), 1, fp);
+        fwrite(dados.origem, 1, tam_part, fp);
+        fwrite(&tam_dest, sizeof(int), 1, fp);
+        fwrite(dados.destino, 1, tam_dest, fp);
+    }
 
     // os dados do vetor reservas são armazenados em sequência
     int i; 
