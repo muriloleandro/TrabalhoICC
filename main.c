@@ -287,6 +287,10 @@ void modificar_reserva(Dados *dados) {
     scanf(" %s", assento_mod);
     assento_mod = (char *) realloc(assento_mod, strlen(assento_mod)+1);
 
+    if (dados->assentos == 0) {
+        fechar_voo(dados);
+    }
+
     for (int i = 0; i < dados->num_reservas; i++) {
         if (strcmp(dados->reservas[i].cpf, cpf_consulta_mod) == 0) {        
             //Essa parte libera os valores antigos salvos na struct
@@ -334,6 +338,9 @@ void modificar_reserva(Dados *dados) {
 void cancelar_reserva(Dados *dados) {
     char cancelado[15];
     scanf(" %s", cancelado);
+    if (dados->assentos == 0) {
+        fechar_voo(dados);
+    }
     for (int i = 0; i < dados->num_reservas; i++){                 
         //Essa parte itera os itens da lista de reservas ate achar um CPF igual ao do input.
         if (strcmp(dados->reservas[i].cpf, cancelado) == 0){
@@ -464,6 +471,9 @@ void ler_reserva(Dados *dados){
     dados->destino = (char *) realloc(dados->destino, strlen(dados->destino)+1);//guarda destino do voo//
 
     dados->assentos = dados->assentos - 1;
+    if (dados->assentos == 0) {
+        fechar_voo(dados);
+    }
 }
 
 void consultar_reserva(Dados *dados){
